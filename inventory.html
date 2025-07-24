@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Inventory Management</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 2rem;
+      background-color: #f9f9f9;
+    }
+    h1 {
+      text-align: center;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+    table, th, td {
+      border: 1px solid #ccc;
+    }
+    th, td {
+      padding: 0.75rem;
+      text-align: left;
+    }
+    form {
+      margin-top: 2rem;
+      padding: 1rem;
+      background-color: #fff;
+      border: 1px solid #ccc;
+      width: 50%;
+    }
+    button {
+      padding: 0.5rem 1rem;
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Inventory Management</h1>
+
+  <table id="inventoryTable">
+    <thead>
+      <tr>
+        <th>Item Name</th>
+        <th>Quantity</th>
+        <th>Unit</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Inventory rows will be inserted here -->
+    </tbody>
+  </table>
+
+  <form id="inventoryForm">
+    <h3>Add / Update Inventory Item</h3>
+    <label>
+      Item Name:
+      <input type="text" id="name" required>
+    </label><br><br>
+    <label>
+      Quantity:
+      <input type="number" id="quantity" required>
+    </label><br><br>
+    <label>
+      Unit:
+      <input type="text" id="unit" required>
+    </label><br><br>
+    <button type="submit">Save Item</button>
+  </form>
+
+  <script>
+    const apiUrl = 'http://localhost:5000/api/inventory';
+
+    // Fetch and display inventory items
+    async function loadInventory() {
+      const res = await fetch(apiUrl);
+      const items = await res.json();
+
+      const tbody = document.querySelector("#inventoryTable tbody");
+      tbody.innerHTML = "";
+
+      items.forEach(item => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${item.name}</td>
+          <td>${item.quantity}</td>
+          <td>${item.unit}</td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    // Add or update inventory item
+    document.getElementById("inventoryForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const name = document.getElementById("name").value.trim();
+      const quantity = parseInt(document.getElementById("quantity").value);
+      const unit = document.getElementById("unit").value.trim();
+
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, quantity, unit })
+      });
+
+      if (response.ok) {
+        alert("Item added/updated successfully!");
+        loadInventory();
+      } else {
+        alert("Error updating inventory.");
+      }
+
+      e.target.reset();
+    });
+
+    // Load inventory on page load
+    loadInventory();
+  </script>
+
+</body>
+</html>

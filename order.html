@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head><title>Order</title><link rel="stylesheet" href="style.css"></head>
+<body>
+  <h1>Place an Order</h1>
+  <label>Table Number: <input id="table" type="number"></label>
+  <ul id="menuList"></ul>
+  <button onclick="placeOrder()">Submit Order</button>
+
+  <script>
+    let selected = [];
+
+    fetch('/api/menu')
+      .then(res => res.json())
+      .then(menu => {
+        const ul = document.getElementById('menuList');
+        menu.forEach(item => {
+          const li = document.createElement('li');
+          li.innerHTML = `
+            ${item.name} - ₹${item.price}
+            <input type="number" placeholder="Qty" onchange="updateOrder('${item._id}', this.value)">
+          `;
+          ul.appendChild(li);
+        });
+      });
+
+    function updateOrder(id, qty) {
+      selected = selected.filter(i => i.menuItem !== id);
+      if (qty > 0) selected.push({ menuItem: id, quantity: parseInt(qty) });
+    }
+
+    function placeOrder() {
+      fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tableNumber: document.getElementById('table').value, items: selected })
+      }).then(() => alert('Order placed!'));
+    }
+  </script>
+</body>
+</html>

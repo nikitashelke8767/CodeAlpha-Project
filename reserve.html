@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head><title>Reserve</title><link rel="stylesheet" href="style.css"></head>
+<body>
+  <h1>Reserve a Table</h1>
+  <label>Name: <input id="name" type="text"></label><br>
+  <label>Guests: <input id="guests" type="number"></label><br>
+  <label>Time: <input id="time" type="datetime-local"></label><br>
+  <select id="tables"></select>
+  <button onclick="reserve()">Reserve</button>
+
+  <script>
+    fetch('/api/tables')
+      .then(res => res.json())
+      .then(data => {
+        const sel = document.getElementById('tables');
+        data.filter(t => !t.isReserved).forEach(t => {
+          const opt = document.createElement('option');
+          opt.value = t._id;
+          opt.textContent = `Table ${t.number} (Cap: ${t.capacity})`;
+          sel.appendChild(opt);
+        });
+      });
+
+    function reserve() {
+      fetch('/api/reservations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: document.getElementById('name').value,
+          guests: document.getElementById('guests').value,
+          time: document.getElementById('time').value,
+          tableId: document.getElementById('tables').value
+        })
+      }).then(() => alert('Table Reserved!'));
+    }
+  </script>
+</body>
+</html>
